@@ -1,5 +1,7 @@
 # asking-ng constitution
 
+[Documentation](../../docs/README.md)
+
 ## Core principles
 
 ### I. Honest implementation scope
