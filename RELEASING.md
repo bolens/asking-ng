@@ -1,5 +1,7 @@
 # Delivery playbook
 
+[Documentation](docs/README.md)
+
 This repository currently contains repository automation and has no versioned
 artifacts. The initial commit establishes the default branch so later changes
 can use pull requests.
