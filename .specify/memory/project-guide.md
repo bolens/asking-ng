@@ -1,5 +1,7 @@
 # asking-ng project guide
 
+[Documentation](../../docs/README.md)
+
 Only repository automation is implemented. Product requirements, runtime, and public API are not established.
 
 ## Current source and ownership
