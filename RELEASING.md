@@ -22,8 +22,8 @@ product-specific release process when the repository gains deliverable artifacts
 ## Branch protection
 
 The default branch requires pull requests, resolved conversations, linear
-history, and an up-to-date branch with passing required checks, including `lint
-/ actionlint` and `lint / zizmor`. These rules also apply to administrators;
+history, and an up-to-date branch with the native Woodpecker check and retained
+Devcontainer result passing. These rules also apply to administrators;
 force pushes and branch deletion are disabled. Zero approving reviews are
 required because this is a solo-maintainer repository; review the complete diff
 before merging.
@@ -34,21 +34,18 @@ cancellations. Update the protection settings when renaming required jobs.
 
 ## Source lint
 
-The Source lint workflow checks maintained markdown files selected by
-[`.github/source-lint.json`](.github/source-lint.json) on every pull request
-and push to `main`. Existing native checks remain part of the merge gate.
-Use the [shared local reproduction instructions](https://github.com/bolens/.github/blob/7603518f305fb76f7bb1b9979f2692521f633b82/docs/source-lint.md)
-with the same tooling revision pinned in
-[the workflow](.github/workflows/source-lint.yml). Review exclusions when adding
-source files; generated and imported files retain their native validation.
-Require the new check to pass on the current PR head before merging.
+Woodpecker checks maintained Markdown files selected by
+[`.github/source-lint.json`](.github/source-lint.json) on every pull request and
+main push. `scripts/ci/check-fleet.sh` pins the same fleet source-lint tooling and
+runs the check without publication credentials. The hosted Source lint workflow
+remains available as a manual fallback. Review exclusions when adding files;
+generated and imported surfaces retain their dedicated validation.
 
 ## Woodpecker
 
-[Portable automation checks](specs/003-woodpecker-validation/spec.md) run through
-`bash scripts/ci/check-fleet.sh` on the shared CI site. They use the same pinned
-source-lint, Spec Kit, actionlint, and zizmor contracts as the hosted checks.
-During rollout require the native current-head check and existing applicable
-checks. Retire duplicates only after genuine PR and main success; preserve
-GitHub metadata assignment and update workflows. This is automation evidence,
+[Portable automation](docs/woodpecker-transition.md) runs source lint, managed
+Spec Kit integrity, actionlint and offline zizmor on Woodpecker. Require its
+native current-head status and every applicable devcontainer check before
+squash merge, then verify genuine main. GitHub keeps manual validation fallbacks,
+scheduled/explicit updates and metadata assignment. This is automation evidence,
 not product coverage, and creates no product release.
