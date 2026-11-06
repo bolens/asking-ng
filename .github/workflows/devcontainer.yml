@@ -1,0 +1,76 @@
+name: Devcontainer
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: devcontainer-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      container: ${{ steps.paths.outputs.container }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4
+        id: paths
+        with:
+          filters: |
+            container:
+              - '.devcontainer/**'
+              - '.github/workflows/devcontainer.yml'
+
+  validate:
+    needs: changes
+    if: github.event_name == 'workflow_dispatch' || needs.changes.outputs.container == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Build and smoke-test the actual devcontainer
+        run: |
+          set -euo pipefail
+          test "$(id -u)" -ne 0
+          docker build --pull --tag devcontainer:ci .devcontainer
+          docker run --rm --network=none --read-only \
+            --cap-drop=ALL --security-opt=no-new-privileges \
+            --user "$(id -u):$(id -g)" \
+            --tmpfs /tmp:rw,nosuid,nodev,size=67108864,mode=1777 \
+            --env HOME=/tmp --env XDG_CONFIG_HOME=/tmp/config \
+            --env XDG_CACHE_HOME=/tmp/cache --env XDG_STATE_HOME=/tmp/state \
+            --mount "type=bind,source=$PWD,target=/workspace" \
+            --workdir /workspace devcontainer:ci \
+            bash .devcontainer/post-create.sh
+
+  result:
+    name: Devcontainer
+    if: always()
+    needs: [changes, validate]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+      - name: Require selected devcontainer acceptance
+        env:
+          CHANGES: ${{ needs.changes.result }}
+          VALIDATE: ${{ needs.validate.result }}
+        run: |
+          test "$CHANGES" = success
+          case "$VALIDATE" in success|skipped) ;; *) exit 1 ;; esac

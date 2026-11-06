@@ -39,3 +39,5 @@ runtime proof. A topic without an implementation stays explicitly unimplemented.
 ## Topic guides
 
 - [Editor setup](../.vscode/README.md)
+
+- [Woodpecker automation](woodpecker-transition.md)
