@@ -42,3 +42,13 @@ with the same tooling revision pinned in
 [the workflow](.github/workflows/source-lint.yml). Review exclusions when adding
 source files; generated and imported files retain their native validation.
 Require the new check to pass on the current PR head before merging.
+
+## Woodpecker
+
+[Portable automation checks](specs/003-woodpecker-validation/spec.md) run through
+`bash scripts/ci/check-fleet.sh` on the shared CI site. They use the same pinned
+source-lint, Spec Kit, actionlint, and zizmor contracts as the hosted checks.
+During rollout require the native current-head check and existing applicable
+checks. Retire duplicates only after genuine PR and main success; preserve
+GitHub metadata assignment and update workflows. This is automation evidence,
+not product coverage, and creates no product release.
